@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat、Cowork 或 Code 練習</title>
+<style>
+  :root{--bg:#f6f4ef;--card:#fff;--text:#1f1d1a;--muted:#6b675f;--line:#e4e0d6;--accent:#c96442;--accent-soft:#f6e3db}
+  @media (prefers-color-scheme: dark){:root{--bg:#1b1a18;--card:#262421;--text:#ece8e0;--muted:#a39e94;--line:#3a3733;--accent:#e07b58;--accent-soft:#3a2a23}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 16px 64px}
+  h1{font-size:1.6rem;margin:0 0 4px}
+  p.sub{margin:0 0 24px;color:var(--muted)}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:16px;transition:.15s}
+  a.card:hover{border-color:var(--accent);background:var(--accent-soft)}
+  a.card h2{margin:0 0 4px;font-size:1.15rem;color:var(--accent)}
+  a.card p{margin:0;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>您會選擇哪一個？Chat、Cowork 或 Code</h1>
+  <p class="sub">六個情境題，練習判斷每項任務該交給 Claude 的哪一種用法。請選擇作答模式：</p>
+  <a class="card" href="quiz-instant.html">
+    <h2>模式一：逐題解說</h2>
+    <p>每回答一題，立即顯示對錯與解說（與官網練習相同）。</p>
+  </a>
+  <a class="card" href="quiz-final.html">
+    <h2>模式二：最後公布答案</h2>
+    <p>六題全部作答完畢後，一次公布正確答案與每題解說。</p>
+  </a>
+</div>
+</body>
+</html>

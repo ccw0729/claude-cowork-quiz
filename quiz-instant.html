@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>您會選擇哪一個？Chat、Cowork 或 Code</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --text:#1f1d1a; --muted:#6b675f; --line:#e4e0d6;
+    --accent:#c96442; --accent-soft:#f6e3db;
+    --ok:#2f7d4f; --ok-soft:#e2f2e8; --bad:#b3402f; --bad-soft:#f8e1dd;
+    --chat:#3b6fb6; --cowork:#c96442; --code:#6a4fb3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1b1a18; --card:#262421; --text:#ece8e0; --muted:#a39e94; --line:#3a3733;
+      --accent:#e07b58; --accent-soft:#3a2a23;
+      --ok:#6cc58f; --ok-soft:#1f3227; --bad:#ef8a78; --bad-soft:#3a2420;
+      --chat:#7aa5e6; --cowork:#e07b58; --code:#a48ae8;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 16px 64px}
+  header h1{font-size:1.6rem;margin:0 0 4px}
+  header p{margin:0;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .progress{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:var(--muted);margin-bottom:8px}
+  .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:20px}
+  .bar>div{height:100%;background:var(--accent);transition:width .3s}
+  .task{font-size:1.15rem;background:var(--accent-soft);border-left:4px solid var(--accent);padding:16px 18px;border-radius:10px;margin:0 0 20px}
+  .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .choice{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:14px 8px;
+    font-size:1.05rem;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+  .choice small{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
+  .choice:hover{border-color:var(--accent)}
+  .choice.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .choice:disabled{cursor:default}
+  .choice:disabled:hover{border-color:var(--line)}
+  .choice.correct,.choice.correct:hover{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+  .choice.wrong,.choice.wrong:hover{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+  .feedback{margin-top:20px;padding:16px 18px;border-radius:12px;border-left:5px solid var(--ok);background:var(--ok-soft);
+    animation:fade .25s ease}
+  .feedback.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+  .feedback .head{font-weight:700;margin-bottom:6px}
+  .feedback.ok .head{color:var(--ok)} .feedback.bad .head{color:var(--bad)}
+  .feedback p{margin:0}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .nav{display:flex;justify-content:space-between;margin-top:24px;gap:12px}
+  .btn{border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:1rem;font-weight:600;
+    padding:10px 22px;border-radius:10px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .score{text-align:center}
+  .score .big{font-size:3rem;font-weight:800;color:var(--accent);line-height:1.2}
+  .review{margin-top:16px}
+  .item{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:14px}
+  .item.ok{border-left:5px solid var(--ok)}
+  .item.bad{border-left:5px solid var(--bad)}
+  .item h3{margin:0 0 6px;font-size:1rem;color:var(--muted)}
+  .item .q{margin:0 0 10px;font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .tag{font-size:.85rem;padding:2px 10px;border-radius:99px}
+  .tag.ok{background:var(--ok-soft);color:var(--ok)}
+  .tag.bad{background:var(--bad-soft);color:var(--bad)}
+  .tag.ans{background:var(--accent-soft);color:var(--accent)}
+  .item p.exp{margin:0}
+  .pattern{margin-top:24px;padding:18px;border-radius:12px;background:var(--accent-soft)}
+  .pattern b.chat{color:var(--chat)} .pattern b.cowork{color:var(--cowork)} .pattern b.code{color:var(--code)}
+  .hidden{display:none}
+  @media (max-width:520px){.choices{grid-template-columns:1fr}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>您會選擇哪一個？</h1>
+    <p>針對每項任務，選擇 Chat、Cowork 或 Code。我們會告訴您原因。</p>
+  </header>
+
+  <section class="card" id="quiz">
+    <div class="progress"><span id="counter"></span><span id="answered"></span></div>
+    <div class="bar"><div id="barFill"></div></div>
+    <p class="task" id="taskText"></p>
+    <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+    <div class="nav" style="justify-content:flex-end">
+      <button class="btn" id="nextBtn">下一題 →</button>
+    </div>
+  </section>
+
+  <section class="card hidden" id="result">
+    <div class="score">
+      <div>作答結果</div>
+      <div class="big" id="scoreText"></div>
+      <div id="scoreMsg"></div>
+    </div>
+    <div class="review" id="review"></div>
+    <div class="pattern">
+      <strong>要記住的模式：</strong>
+      <b class="chat">Chat</b> 用於思考，<b class="cowork">Cowork</b> 用於委派，<b class="code">Code</b> 用於軟體開發。<br>
+      如果有疑問，就問問這項任務是否涉及您的檔案或工具，並以一個實際的交付成果結束——如果是，就選 Cowork。
+    </div>
+    <div class="nav" style="justify-content:center">
+      <button class="btn" id="restartBtn">重新作答</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const OPTIONS = [
+  {key:"Chat",   hint:"思考・對話"},
+  {key:"Cowork", hint:"委派・交付成果"},
+  {key:"Code",   hint:"軟體開發"}
+];
+
+const QUESTIONS = [
+  {
+    task:"「閱讀我下載資料夾中的五份供應商 PDF，比較它們的價格和 SLA，並將結果放入試算表中。」",
+    answer:"Cowork",
+    verdict:"Cowork 是正確的選擇。",
+    exp:"這項任務涉及您電腦上的檔案，有多個步驟（閱讀每份 PDF、擷取標準、比較、格式化），並以一個實際的交付成果結束，儲存回您的資料夾——這正是 Cowork 所設計的形態，而本機檔案也使其超出 Chat 的能力範圍。"
+  },
+  {
+    task:"「在這五個原始碼檔案中重構驗證模組，並執行測試套件。」",
+    answer:"Code",
+    verdict:"Code 是正確的選擇。",
+    exp:"這是在儲存庫內的軟體工作——編輯原始碼檔案、執行測試，並可能進行提交。這正是 Claude Code 的主場。"
+  },
+  {
+    task:"「幫我腦力激盪我們新產品發表的標語想法——大約 10 個方向，兼具俏皮與嚴肅風格。」",
+    answer:"Chat",
+    verdict:"Chat 是正確的選擇。",
+    exp:"您正在大聲思考，並希望在回應本身中得到一份想法清單。沒有資料夾需要讀取，沒有工具需要使用，除了這些想法本身之外也沒有其他交付成果。"
+  },
+  {
+    task:"「整理一份關於我們第一季業績的單頁簡報。數字在我桌面上的一份試算表中，我希望這份簡報儲存在我的報告資料夾中。」",
+    answer:"Cowork",
+    verdict:"Cowork 是正確的選擇——但這一題比較難判斷。",
+    exp:"一份單頁簡報聽起來像是您可以在 Chat 中起草的東西，而且您確實可以。但資料存放在您硬碟上的一份試算表中，而且您希望交付成果儲存到一個資料夾中。透過 Cowork，Claude 可以直接讀取試算表（無需複製貼上，數字準確），並將簡報放到您想要的位置。實際檔案與實際儲存位置的存在就是訊號。"
+  },
+  {
+    task:"「看看我們 #product-feedback Slack 頻道本週的客戶回饋。有哪些我應該注意的新興主題？」",
+    answer:"Chat",
+    verdict:"Chat 是正確的選擇——即使它從連接器中擷取了資料。",
+    exp:"涉及連接器並不代表這就是 Cowork 的工作。關鍵在於您想要得到什麼交付成果。在這裡，您想要的是洞見——您可以在對話中吸收的主題，而不是一份已儲存的成品。Chat 也能從連接器中擷取資料。當有需要產出並儲存在某處的交付成果時，選擇 Cowork；當答案就是對話本身時，選擇 Chat。"
+  },
+  {
+    task:"「我們的 React 前端有個錯誤——分析儀表板的資料表在行動裝置上無法正常顯示。追蹤各個元件，找出問題所在，並推送修復。」",
+    answer:"Code",
+    verdict:"Code 是正確的選擇。",
+    exp:"「修復儀表板」聽起來可能像是 Cowork 所處理的一般性工作，但您實際上是在程式碼庫內操作——瀏覽 React 元件、除錯渲染問題，並推送程式碼變更。這正是 Code 所設計的用途。Cowork 可以讀取原始碼檔案，但它並非設計用來在儲存庫內工作、執行測試套件，或像 Code 那樣管理 Git。"
+  }
+];
+
+let current = 0;
+let picks = new Array(QUESTIONS.length).fill(null);
+const $ = id => document.getElementById(id);
+
+function render(){
+  const q = QUESTIONS[current];
+  const pick = picks[current];
+  $("counter").textContent = `任務 ${current+1} / ${QUESTIONS.length}`;
+  const right = picks.filter((p,i)=>p && p===QUESTIONS[i].answer).length;
+  $("answered").textContent = `目前答對 ${right} 題`;
+  $("barFill").style.width = `${(picks.filter(p=>p).length/QUESTIONS.length)*100}%`;
+  $("taskText").textContent = q.task;
+
+  const box = $("choices"); box.innerHTML = "";
+  OPTIONS.forEach(o=>{
+    const b = document.createElement("button");
+    let cls = "choice";
+    if(pick){
+      if(o.key === q.answer) cls += " correct";
+      else if(o.key === pick) cls += " wrong";
+      b.disabled = true;
+    }
+    b.className = cls;
+    const mark = pick ? (o.key===q.answer ? " ✓" : (o.key===pick ? " ✗" : "")) : "";
+    b.innerHTML = `${o.key}${mark}<small>${o.hint}</small>`;
+    b.onclick = () => { if(!picks[current]){ picks[current] = o.key; render(); } };
+    box.appendChild(b);
+  });
+
+  const fb = $("feedback");
+  if(pick){
+    const ok = pick === q.answer;
+    fb.innerHTML = `<div class="feedback ${ok?"ok":"bad"}">
+      <div class="head">${ok ? "✅ 答對了！" : `❌ 不太對——您選了 ${pick}。`}</div>
+      <p><strong>${q.verdict}</strong>${q.exp}</p></div>`;
+  } else {
+    fb.innerHTML = "";
+  }
+
+  const last = current === QUESTIONS.length-1;
+  $("nextBtn").textContent = last ? "完成，查看結果" : "下一題 →";
+  $("nextBtn").disabled = !pick;
+}
+
+function showResult(){
+  let score = 0;
+  const rv = $("review"); rv.innerHTML = "";
+  QUESTIONS.forEach((q,i)=>{
+    const ok = picks[i] === q.answer; if(ok) score++;
+    const d = document.createElement("div");
+    d.className = "item " + (ok ? "ok" : "bad");
+    d.innerHTML = `
+      <h3>任務 ${i+1} / ${QUESTIONS.length}　${ok ? "✅ 答對了" : "❌ 答錯了"}</h3>
+      <p class="q">${q.task}</p>
+      <div class="tags">
+        <span class="tag ${ok ? "ok" : "bad"}">您的答案：${picks[i]}</span>
+        <span class="tag ans">正確答案：${q.answer}</span>
+      </div>
+      <p class="exp"><strong>${q.verdict}</strong>${q.exp}</p>`;
+    rv.appendChild(d);
+  });
+  $("scoreText").textContent = `${QUESTIONS.length} 項中答對 ${score} 項`;
+  $("scoreMsg").textContent =
+    score === QUESTIONS.length ? "太棒了，全部答對！" :
+    score >= 4 ? "很不錯！看看下面答錯的題目解說。" : "沒關係，看完解說再挑戰一次吧！";
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("nextBtn").onclick = () => {
+  if(current < QUESTIONS.length-1){ current++; render(); } else { showResult(); }
+};
+$("restartBtn").onclick = () => {
+  current = 0; picks = new Array(QUESTIONS.length).fill(null);
+  $("result").classList.add("hidden"); $("quiz").classList.remove("hidden"); render();
+};
+
+render();
+</script>
+</body>
+</html>
